@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Ziidi – Let your money work for you</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .gradient-primary { background: linear-gradient(135deg, #14532d 0%, #15803d 100%); }
+    .toast { position: fixed; bottom: 25px; right: 25px; background: #1f2937; color: white; padding: 12px 24px; border-radius: 50px; display: none; z-index: 10000; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .chat-popup { position: fixed; bottom: 90px; right: 20px; width: 350px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1000; border: 1px solid #e2e8f0; }
+    .chat-header { background: #15803d; color: white; padding: 12px 16px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; font-weight: bold; }
+    .chat-messages { height: 280px; overflow-y: auto; padding: 12px; background: #f9fafb; font-size: 14px; }
+    .chat-input-area { display: flex; padding: 8px; border-top: 1px solid #e2e8f0; }
+    .chat-input-area input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 20px; outline: none; }
+    .chat-input-area button { background: #15803d; color: white; border: none; border-radius: 20px; padding: 6px 16px; margin-left: 8px; cursor: pointer; }
+    .whatsapp-btn { position: fixed; bottom: 20px; left: 20px; background: #25D366; color: white; border-radius: 50px; padding: 10px 18px; display: flex; align-items: center; gap: 8px; z-index: 1000; text-decoration: none; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .chat-icon-btn { position: fixed; bottom: 20px; right: 20px; background: #15803d; color: white; border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .support-msg { background: #f0fdf4; border-left: 4px solid #15803d; margin-bottom: 12px; padding: 12px; border-radius: 8px; }
+    .mpesa-card { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #86efac; border-radius: 16px; }
+    .faq-item { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+    .faq-question { font-weight: 700; color: #166534; display: flex; justify-content: space-between; }
+    .faq-answer { display: none; margin-top: 8px; color: #4b5563; padding-left: 16px; border-left: 2px solid #86efac; }
+    .hero-bold { font-weight: 800; color: #fef9c3; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    button { transition: all 0.2s ease; }
+    button:hover { transform: translateY(-1px); }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <div id="toast" class="toast"></div>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/254798646009?text=Hello%20Ziidi%20Investment" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp fa-2x"></i> <span>24/7 WhatsApp Support</span></a>
+
+  <!-- Chatbot -->
+  <div id="chatIcon" class="chat-icon-btn"><i class="fas fa-robot"></i></div>
+  <div id="chatPopup" class="chat-popup">
+    <div class="chat-header"><span><i class="fas fa-headset"></i> Ziidi Support Assistant</span><i id="closeChat" class="fas fa-times cursor-pointer"></i></div>
+    <div id="chatMessages" class="chat-messages"><div class="mb-2"><span class="bg-green-100 p-2 rounded-lg inline-block">Hello! How can I help you today?</span></div></div>
+    <div class="chat-input-area"><input type="text" id="chatInput" placeholder="Type your question..."><button id="sendChatBtn">Send</button></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 py-4 pb-24">
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between items-center bg-white/90 backdrop-blur rounded-2xl shadow-md p-3 mb-6 sticky top-2 z-50 border border-green-100">
+      <div class="flex items-center gap-2"><i class="fas fa-seedling text-3xl text-green-700"></i><span class="text-2xl font-extrabold text-green-800">Ziidi</span><span class="text-xs text-gray-500 hidden md:inline">🌱 Let your money work for you</span></div>
+      <div class="flex items-center gap-4"><div id="liveClock" class="text-sm bg-green-50 px-3 py-1 rounded-full text-green-800 font-mono"></div><div id="navLinks" class="flex gap-3 text-sm font-medium"></div></div>
+    </div>
+
+    <!-- ==================== VIEWS ==================== -->
+    
+    <!-- HOME -->
+    <div id="viewHome" class="view active">
+      <div class="gradient-primary rounded-3xl text-white p-8 md:p-12 text-center shadow-2xl">
+        <h1 class="text-4xl md:text-6xl font-extrabold mb-4 hero-bold">Let your money work for you</h1>
+        <p class="text-xl mb-6">Earn up to <strong class="text-yellow-300 text-3xl">4% daily</strong> compound interest.</p>
+        <div class="flex justify-center gap-4"><button id="homeGetStarted" class="bg-white text-green-800 px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl">Get Started →</button><button id="homeLearnMore" class="border-2 border-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-green-800">Learn More</button></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12"><div><div class="text-3xl font-black counter" data-target="3250">0</div><div class="text-sm">Active Investors</div></div><div><div class="text-3xl font-black counter" data-target="82500000">0</div><div class="text-sm">Total Invested (KSH)</div></div><div><div class="text-3xl font-black">24/7</div><div class="text-sm">Support</div></div><div><div class="text-3xl font-black counter" data-target="98">0</div><div class="text-sm">Satisfaction</div></div></div>
+      </div>
+      
+      <div id="featuresSection" class="mt-16 scroll-mt-20"><h2 class="text-3xl font-bold text-center mb-10">Why choose <span class="text-green-700">Ziidi</span></h2><div class="grid md:grid-cols-3 gap-8"><div class="bg-white p-6 rounded-2xl shadow-md text-center border-t-4 border-green-500"><i class="fas fa-chart-line text-5xl text-green-600 mb-4"></i><h3 class="text-xl font-bold">2.5% – 4% Daily</h3><p class="text-gray-600">Compound every 24h</p></div><div class="bg-white p-6 rounded-2xl shadow-md text-center border-t-4 border-green-500"><i class="fas fa-shield-alt text-5xl text-green-600 mb-4"></i><h3 class="text-xl font-bold">Secure & Regulated</h3><p class="text-gray-600">SSL, Kenyan compliant</p></div><div class="bg-white p-6 rounded-2xl shadow-md text-center border-t-4 border-green-500"><i class="fas fa-headset text-5xl text-green-600 mb-4"></i><h3 class="text-xl font-bold">24/7 Support</h3><p class="text-gray-600">WhatsApp & Live Chat</p></div></div></div>
+      
+      <div class="mt-16"><h2 class="text-3xl font-bold text-center mb-10">Investment Plans</h2><div class="grid md:grid-cols-3 gap-8"><div class="bg-white border-t-4 border-green-500 rounded-2xl p-6 shadow-lg relative"><div class="absolute -top-3 right-4 bg-green-500 text-white text-xs px-3 py-1 rounded-full">BASIC</div><h3 class="text-2xl font-bold">Starter</h3><p class="text-4xl font-black">2.5% <span class="text-sm">daily</span></p><p class="text-gray-500">Min KSH 1,000</p><button class="signupPlanBtn w-full mt-6 bg-green-600 text-white py-2 rounded-full font-semibold">Start Now</button></div><div class="bg-white border-t-4 border-green-500 rounded-2xl p-6 shadow-lg relative"><div class="absolute -top-3 right-4 bg-green-500 text-white text-xs px-3 py-1 rounded-full">🔥 POPULAR</div><h3 class="text-2xl font-bold">Pro</h3><p class="text-4xl font-black">3.0% <span class="text-sm">daily</span></p><p class="text-gray-500">Min KSH 5,000</p><button class="signupPlanBtn w-full mt-6 bg-green-600 text-white py-2 rounded-full font-semibold">Get Pro</button></div><div class="bg-white border-t-4 border-green-500 rounded-2xl p-6 shadow-lg relative"><div class="absolute -top-3 right-4 bg-green-500 text-white text-xs px-3 py-1 rounded-full">VIP</div><h3 class="text-2xl font-bold">Elite</h3><p class="text-4xl font-black">4.0% <span class="text-sm">daily</span></p><p class="text-gray-500">Min KSH 20,000</p><button class="signupPlanBtn w-full mt-6 bg-green-600 text-white py-2 rounded-full font-semibold">Go Elite</button></div></div></div>
+      
+      <div class="mt-16 bg-green-50 rounded-3xl p-8"><h2 class="text-3xl font-bold text-center mb-6">Trusted by thousands</h2><div class="grid md:grid-cols-2 gap-6"><div class="bg-white p-5 rounded-xl shadow"><i class="fas fa-quote-left text-green-400 text-2xl"></i><p class="mt-2">"Ziidi changed my life. Earned over KSH 120k in 3 months! Support is amazing."</p><p class="font-bold mt-3">— James M., Nairobi</p><div class="flex text-yellow-400"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div><div class="bg-white p-5 rounded-xl shadow"><i class="fas fa-quote-left text-green-400 text-2xl"></i><p class="mt-2">"Very transparent. Withdrawals processed within 24h. Highly recommend!"</p><p class="font-bold mt-3">— Grace W., Mombasa</p><div class="flex text-yellow-400"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div></div></div>
+      
+      <div class="mt-16"><h2 class="text-3xl font-bold text-center mb-6">Frequently Asked Questions</h2><div class="max-w-3xl mx-auto space-y-3" id="faqContainer"></div></div>
+      
+      <div class="mt-16 border-t pt-8 text-center text-gray-500"><p><i class="fab fa-whatsapp"></i> 24/7 Support: WhatsApp & Live Chat</p><p class="text-xs mt-2">© 2025 Ziidi – Let your money work for you</p></div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="viewLogin" class="view"><div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8"><h2 class="text-3xl font-bold text-center mb-6 text-green-800">Welcome back</h2><form id="loginForm"><input type="email" id="loginEmail" placeholder="Email" class="w-full border rounded-xl p-3 mb-3 focus:ring-green-500" required><input type="password" id="loginPassword" placeholder="Password" class="w-full border rounded-xl p-3 mb-4" required><button type="submit" class="w-full bg-green-700 text-white py-3 rounded-xl font-bold hover:bg-green-800">Login</button></form><p class="text-center mt-4"><button id="forgotBtn" class="text-green-600">Forgot password?</button></p><p class="text-center mt-3">New? <button id="signupFromLogin" class="text-green-600 font-bold">Create account</button></p></div></div>
+
+    <!-- SIGNUP -->
+    <div id="viewSignup" class="view"><div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8"><h2 class="text-3xl font-bold text-center mb-4 text-green-800">Join Ziidi</h2><form id="signupForm"><input type="text" id="fullname" placeholder="Full name" class="w-full border rounded-xl p-3 mb-3" required><input type="email" id="signupEmail" placeholder="Email" class="w-full border rounded-xl p-3 mb-3" required><input type="tel" id="phone" placeholder="Phone (07XXXXXXXX)" class="w-full border rounded-xl p-3 mb-3" required><input type="password" id="signupPassword" placeholder="Password (min 6 chars)" class="w-full border rounded-xl p-3 mb-3" required><select id="signupPlan" class="w-full border rounded-xl p-3 mb-3"><option value="starter">Starter Plan (2.5% daily, min 1,000 KSH)</option><option value="pro">Pro Plan (3.0% daily, min 5,000 KSH)</option><option value="elite">Elite Plan (4.0% daily, min 20,000 KSH)</option></select><label class="flex items-center text-sm mb-5"><input type="checkbox" id="agreePrivacy" required class="mr-2"> I agree to <button type="button" id="privacyLink" class="text-green-600">Privacy Policy</button></label><button type="submit" class="w-full bg-green-700 text-white py-3 rounded-xl font-bold">Sign Up</button></form><p class="text-center mt-4">Already have an account? <button id="loginFromSignup" class="text-green-600">Login</button></p></div></div>
+
+    <!-- FORGOT -->
+    <div id="viewForgot" class="view"><div class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow"><h2 class="text-2xl font-bold mb-3 text-green-800">Reset password</h2><form id="forgotForm"><input type="email" id="forgotEmail" class="w-full border p-3 rounded-xl mb-4" placeholder="Your email" required><button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-700">Send reset link</button></form><p class="mt-4 text-center"><button id="backToLogin" class="text-green-600">Back to login</button></p></div></div>
+
+    <!-- DASHBOARD -->
+    <div id="viewDashboard" class="view">
+      <div class="bg-gradient-to-r from-green-900 to-green-800 text-white rounded-2xl p-6 mb-6">
+        <div class="flex justify-between flex-wrap"><div><p class="text-green-200 text-sm">Total Balance</p><p class="text-5xl font-black" id="dashBalance">KSH 0</p></div><div class="bg-white/20 rounded-xl px-4 py-2 text-center"><p class="text-xs">Active Plan</p><p class="font-bold text-xl" id="activePlanName">Starter</p><p class="text-xs" id="activePlanRate">2.5% daily</p></div></div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6"><div><p class="text-green-200 text-xs">Today's Interest</p><p class="font-bold text-lg" id="todayInterest">KSH 0</p></div><div><p class="text-green-200 text-xs">Total Earned</p><p class="font-bold text-lg" id="totalEarned">KSH 0</p></div><div><p class="text-green-200 text-xs">Yesterday's Profit</p><p class="font-bold text-lg" id="yesterdayInterest">KSH 0</p></div><div><p class="text-green-200 text-xs">Next earning in</p><p class="font-bold text-lg" id="countdown">23h 59m</p></div></div>
+      </div>
+      <div class="grid grid-cols-2 gap-4 mb-6"><button id="investBtn" class="bg-green-700 text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> Invest Now</button><button id="withdrawBtn" class="bg-gray-200 text-gray-800 py-3 rounded-xl font-bold flex items-center justify-center gap-2"><i class="fas fa-hand-holding-usd"></i> Withdraw</button></div>
+      
+      <div class="bg-white rounded-2xl shadow-md p-5 mb-6 border-l-4 border-green-500"><h3 class="font-bold text-lg text-green-800">📈 Upgrade your plan for higher returns</h3><div class="grid grid-cols-3 gap-3 mt-3"><div class="bg-green-50 p-3 rounded-xl text-center"><p class="font-bold text-green-700">Starter</p><p>2.5% daily</p><p class="text-xs">min 1,000</p></div><div class="bg-green-50 p-3 rounded-xl text-center"><p class="font-bold text-green-700">Pro</p><p>3.0% daily</p><p class="text-xs">min 5,000</p></div><div class="bg-green-50 p-3 rounded-xl text-center"><p class="font-bold text-green-700">Elite</p><p>4.0% daily</p><p class="text-xs">min 20,000</p></div></div><button id="upgradeBtn" class="mt-4 w-full bg-green-100 py-2 rounded-full text-green-700 font-semibold hover:bg-green-200">Deposit to upgrade</button></div>
+
+      <div class="bg-white rounded-2xl shadow-md p-5 mb-6 border-l-4 border-green-500"><h3 class="font-bold text-xl text-green-800">📊 Investment growth (automatic daily compound)</h3><div class="flex gap-2 flex-wrap mb-3"><button data-period="3months" class="perfBtn bg-green-100 px-3 py-1 rounded-full text-sm text-green-800">3 Months</button><button data-period="6months" class="perfBtn bg-green-100 px-3 py-1 rounded-full text-sm text-green-800">6 Months</button><button data-period="1year" class="perfBtn bg-green-100 px-3 py-1 rounded-full text-sm text-green-800">1 Year</button></div><canvas id="perfChart" height="180"></canvas><div class="mt-4 overflow-x-auto"><table class="w-full text-sm"><thead class="bg-green-50"><tr><th class="p-2 text-left">Month</th><th class="p-2 text-right">Interest Earned (KSH)</th></tr></thead><tbody id="perfTable"></tbody></table></div></div>
+
+      <div class="grid md:grid-cols-2 gap-4"><div class="bg-white rounded-xl p-4 shadow border-l-4 border-green-500"><h4 class="font-bold text-green-800">📥 Recent Deposits</h4><div id="recentDeposits" class="text-sm space-y-2 mt-2"></div></div><div class="bg-white rounded-xl p-4 shadow border-l-4 border-green-500"><h4 class="font-bold text-green-800">📤 Recent Withdrawals</h4><div id="recentWithdrawals" class="text-sm space-y-2 mt-2"></div></div></div>
+    </div>
+
+    <!-- DEPOSIT -->
+    <div id="viewDeposit" class="view"><div class="max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-6"><h2 class="text-2xl font-bold text-green-800 mb-4 flex items-center gap-2"><i class="fab fa-m-pesa text-green-700"></i> M-Pesa Deposit</h2><div class="mpesa-card p-4 rounded-xl mb-5 text-center"><i class="fab fa-m-pesa text-3xl text-green-700"></i><p class="font-mono text-lg font-bold mt-2">Paybill: <span class="text-green-800">516600</span></p><p class="font-mono text-lg font-bold">Account: <span class="text-green-800">5562100001</span></p><p class="text-xs text-gray-600 mt-1">Send money via M-Pesa, then enter transaction code below.</p></div><form id="depositReqForm"><input type="number" id="depositAmount" placeholder="Amount (KSH)" class="w-full border rounded-xl p-3 mb-3" min="100" required><select id="depositPlanSelect" class="w-full border rounded-xl p-3 mb-3"><option value="starter">Starter Plan (2.5% daily, min 1,000 KSH)</option><option value="pro">Pro Plan (3.0% daily, min 5,000 KSH)</option><option value="elite">Elite Plan (4.0% daily, min 20,000 KSH)</option></select><input type="text" id="mpesaCode" placeholder="M-Pesa transaction code" class="w-full border rounded-xl p-3 mb-4" required><button type="submit" class="w-full bg-green-700 text-white py-3 rounded-xl font-bold hover:bg-green-800"><i class="fas fa-paper-plane"></i> Submit deposit request</button></form><p id="depositMessage" class="text-center text-sm text-gray-500 mt-3"></p><button id="backDashFromDeposit" class="mt-4 text-green-600 text-center w-full">← Back to Dashboard</button></div></div>
+
+    <!-- WITHDRAW -->
+    <div id="viewWithdraw" class="view"><div class="max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-6"><h2 class="text-2xl font-bold text-green-800 mb-3 flex items-center gap-2"><i class="fas fa-hand-holding-usd"></i> Withdraw funds</h2><p class="mb-2">Available balance: <span id="withdrawBalance" class="font-bold text-green-700">KSH 0</span></p><div id="eligibilityMsg" class="mb-4 p-3 rounded-lg bg-amber-50 text-amber-800 text-sm"></div><form id="withdrawReqForm"><input type="number" id="withdrawAmount" placeholder="Amount (KSH min 1,000)" class="w-full border rounded-xl p-3 mb-3" min="1000" required><input type="tel" id="withdrawMpesa" placeholder="Your M-Pesa number (e.g., 0712345678)" class="w-full border rounded-xl p-3 mb-4" required><button type="submit" class="w-full bg-red-700 text-white py-3 rounded-xl font-bold hover:bg-red-800"><i class="fas fa-check-circle"></i> Request Withdrawal</button></form><p id="withdrawMessage" class="text-center text-sm text-gray-500 mt-3"></p><button id="backDashFromWithdraw" class="mt-4 text-green-600 text-center w-full">Cancel</button></div></div>
+
+    <!-- ADMIN -->
+    <div id="viewAdmin" class="view"><div class="bg-white rounded-2xl shadow-xl p-6"><h2 class="text-3xl font-bold text-green-800 mb-4">Admin Console</h2><div class="flex gap-3 flex-wrap mb-5"><button id="adminUsers" class="bg-green-100 px-4 py-2 rounded-full text-green-800 hover:bg-green-200">👥 Users</button><button id="adminDeposits" class="bg-green-100 px-4 py-2 rounded-full text-green-800 hover:bg-green-200">💰 Deposits</button><button id="adminWithdrawals" class="bg-green-100 px-4 py-2 rounded-full text-green-800 hover:bg-green-200">🏧 Withdrawals</button><button id="adminSupport" class="bg-green-100 px-4 py-2 rounded-full text-green-800 hover:bg-green-200">💬 Support</button></div><div id="adminContent" class="overflow-x-auto"></div><button id="exitAdmin" class="mt-6 text-green-600 text-center w-full font-semibold">Exit Admin</button></div></div>
+
+    <!-- PRIVACY -->
+    <div id="viewPrivacy" class="view"><div class="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8 border-l-4 border-green-500"><h2 class="text-2xl font-bold text-green-800">Privacy Policy & Terms of Service</h2><div class="mt-4 space-y-3 text-gray-700"><p><strong>1. Information We Collect:</strong> Name, email, phone, transaction history for KYC and platform operation.</p><p><strong>2. Use of Data:</strong> Only for interest calculation, deposit/withdrawal processing, and communication. Never sold.</p><p><strong>3. Security:</strong> Data stored locally in your browser. Use a strong password.</p><p><strong>4. Investment Risks:</strong> Daily compound interest (2.5%–4%) is automated. Past performance does not guarantee future returns.</p><p><strong>5. Withdrawal Policy:</strong> Minimum 1,000 KSH. Only allowed <strong>30 days after first deposit</strong> (lock period). Requires M-Pesa number. Approved by admin within 24h.</p><p><strong>6. Deposit Policy:</strong> M-Pesa Paybill 516600, Account 5562100001. Admin confirmation within 30min.</p><p><strong>7. Account Closure:</strong> Request via live chat or WhatsApp. Data removed within 7 days.</p><p><strong>8. Governing Law:</strong> Kenyan law. Disputes resolved in Nairobi courts.</p><p><strong>9. Contact:</strong> Live chat or WhatsApp button.</p></div><button id="backFromPrivacy" class="mt-6 bg-green-600 text-white px-5 py-2 rounded-full hover:bg-green-700">I Understand</button></div></div>
+  </div>
+
+  <script>
+    // ---------- DATA ----------
+    let currentUser = null;
+    let users = [], deposits = [], withdrawals = [], interestLogs = [];
+    let supportMessages = [];
+    let perfChart = null;
+    let countdownInterval = null;
+
+    function save() {
+      localStorage.setItem('ziidi_users', JSON.stringify(users));
+      localStorage.setItem('ziidi_deposits', JSON.stringify(deposits));
+      localStorage.setItem('ziidi_withdrawals', JSON.stringify(withdrawals));
+      localStorage.setItem('ziidi_interestLogs', JSON.stringify(interestLogs));
+      localStorage.setItem('ziidi_support', JSON.stringify(supportMessages));
+    }
+    function load() {
+      users = JSON.parse(localStorage.getItem('ziidi_users') || '[]');
+      deposits = JSON.parse(localStorage.getItem('ziidi_deposits') || '[]');
+      withdrawals = JSON.parse(localStorage.getItem('ziidi_withdrawals') || '[]');
+      interestLogs = JSON.parse(localStorage.getItem('ziidi_interestLogs') || '[]');
+      supportMessages = JSON.parse(localStorage.getItem('ziidi_support') || '[]');
+      if (!users.find(u=>u.email==='admin@ziidi.com')) {
+        users.push({ id: Date.now(), name: 'Administrator', email: 'admin@ziidi.com', phone: '0798646009', password: 'Admin123', balance: 0, totalInterest: 0, role: 'admin', plan: 'starter', lastInterestDate: new Date().toISOString().split('T')[0], firstDepositDate: null });
+        save();
+      }
+    }
+    function toast(msg, isError=false) { 
+      let t=document.getElementById('toast'); 
+      t.innerText = msg; 
+      t.style.backgroundColor = isError ? '#dc2626' : '#15803d'; 
+      t.style.display = 'block'; 
+      setTimeout(() => t.style.display = 'none', 3500);
+    }
+
+    function rateForPlan(p) { return p==='pro' ? 0.03 : (p==='elite' ? 0.04 : 0.025); }
+
+    // Daily compound interest (auto)
+    function updateInterest(userId) {
+      const user = users.find(u=>u.id==userId);
+      if(!user || user.balance<=0) return;
+      const today = new Date().toISOString().split('T')[0];
+      const last = user.lastInterestDate || today;
+      if(last === today) return;
+      let bal = user.balance;
+      let total = 0;
+      let start = new Date(last); start.setDate(start.getDate()+1);
+      let end = new Date(); end.setDate(end.getDate()-1);
+      if(start > end) return;
+      const rate = rateForPlan(user.plan);
+      for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+        let dateStr = d.toISOString().split('T')[0];
+        let daily = bal * rate;
+        interestLogs.push({ userId, date: dateStr, amount: daily, before: bal });
+        bal += daily;
+        total += daily;
+      }
+      user.balance = bal;
+      user.totalInterest = (user.totalInterest||0) + total;
+      user.lastInterestDate = today;
+      save();
+      if(currentUser && currentUser.id===userId) refreshDashboard();
+    }
+
+    function yesterdayInterest(userId) { let y=new Date(); y.setDate(y.getDate()-1); let yStr=y.toISOString().split('T')[0]; let log=interestLogs.find(l=>l.userId==userId && l.date===yStr); return log ? log.amount : 0; }
+    function todayEstimate(userId) { let u=users.find(u=>u.id==userId); if(!u) return 0; return u.balance * rateForPlan(u.plan); }
+    function monthlyPerf(userId, limit=12) { let logs=interestLogs.filter(l=>l.userId==userId).sort((a,b)=>a.date.localeCompare(b.date)); let map=new Map(); logs.forEach(l=>{ let [y,m]=l.date.split('-'); let key=`${y}-${m}`; map.set(key,(map.get(key)||0)+l.amount); }); return Array.from(map.entries()).map(([k,v])=>({month:k,interest:v})).reverse().slice(0,limit); }
+    
+    function withdrawalEligibility(userId) {
+      let u=users.find(u=>u.id==userId);
+      if(!u || !u.firstDepositDate) return { eligible: false, availableDate: null, daysLeft: 30, message: "No deposit yet. Withdrawal available 30 days after first deposit." };
+      let first = new Date(u.firstDepositDate);
+      let today = new Date();
+      let diff = Math.floor((today - first)/(1000*60*60*24));
+      if(diff >= 30) return { eligible: true, daysLeft: 0, message: "You are eligible to withdraw. Minimum 1,000 KSH." };
+      let avail = new Date(first); avail.setDate(first.getDate()+30);
+      return { eligible: false, availableDate: avail, daysLeft: 30-diff, message: `Remaining ${30-diff} days for your next withdrawal. Available on ${avail.toLocaleDateString()}. Minimum 1,000 KSH.` };
+    }
+
+    function refreshDashboard() {
+      if(!currentUser) return;
+      updateInterest(currentUser.id);
+      let u = users.find(u=>u.id===currentUser.id);
+      if(!u) return;
+      currentUser = u;
+      document.getElementById('dashBalance').innerHTML = `KSH ${u.balance.toFixed(2)}`;
+      document.getElementById('todayInterest').innerHTML = `KSH ${todayEstimate(u.id).toFixed(2)}`;
+      document.getElementById('totalEarned').innerHTML = `KSH ${(u.totalInterest||0).toFixed(2)}`;
+      document.getElementById('yesterdayInterest').innerHTML = `KSH ${yesterdayInterest(u.id).toFixed(2)}`;
+      let pn = u.plan==='pro' ? 'Pro' : (u.plan==='elite' ? 'Elite' : 'Starter');
+      let rt = rateForPlan(u.plan)*100;
+      document.getElementById('activePlanName').innerHTML = pn;
+      document.getElementById('activePlanRate').innerHTML = `${rt}% daily`;
+      if(countdownInterval) clearInterval(countdownInterval);
+      function updateCountdown() { let n=new Date(); let mid=new Date(n); mid.setHours(24,0,0,0); let diff=mid-n; let h=Math.floor(diff/(3600000)); let m=Math.floor((diff%3600000)/60000); document.getElementById('countdown').innerHTML=`${h}h ${m}m`; }
+      updateCountdown(); countdownInterval=setInterval(updateCountdown,60000);
+      
+      let depo = deposits.filter(d=>d.userId===u.id).slice(-5).reverse();
+      document.getElementById('recentDeposits').innerHTML = depo.map(d=>`<div class="flex justify-between"><span>KSH ${d.amount}</span><span class="text-xs ${d.status==='approved'?'text-green-600':'text-yellow-600'}">${d.status}</span><span>${new Date(d.date).toLocaleDateString()}</span></div>`).join('')||'<span class="text-gray-400">No deposits</span>';
+      let withs = withdrawals.filter(w=>w.userId===u.id).slice(-5).reverse();
+      document.getElementById('recentWithdrawals').innerHTML = withs.map(w=>`<div class="flex justify-between"><span>KSH ${w.amount}</span><span class="text-xs ${w.status==='approved'?'text-green-600':'text-red-600'}">${w.status}</span><span>${new Date(w.date).toLocaleDateString()}</span></div>`).join('')||'<span class="text-gray-400">No withdrawals</span>';
+      document.getElementById('withdrawBalance').innerHTML = `KSH ${u.balance.toFixed(2)}`;
+      
+      let elig = withdrawalEligibility(u.id);
+      let msgDiv = document.getElementById('eligibilityMsg');
+      if(msgDiv) msgDiv.innerHTML = elig.message;
+      loadPerf('3months');
+    }
+
+    function loadPerf(period) {
+      if(!currentUser) return;
+      let months = period==='3months'?3:(period==='6months'?6:12);
+      let perf = monthlyPerf(currentUser.id, months);
+      let ctx = document.getElementById('perfChart').getContext('2d');
+      if(perfChart) perfChart.destroy();
+      perfChart = new Chart(ctx, { type:'line', data:{ labels:perf.map(p=>p.month), datasets:[{ label:'Interest Earned (KSH)', data:perf.map(p=>p.interest), borderColor:'#15803d', fill:true, backgroundColor:'rgba(21,128,61,0.1)', tension:0.3 }] } });
+      document.getElementById('perfTable').innerHTML = perf.map(p=>`<tr class="border-b"><td class="p-2">${p.month}</td><td class="text-right">KSH ${p.interest.toFixed(2)}</td></tr>`).join('')||'<tr><td colspan="2" class="text-center text-gray-400 p-4">No data yet. Interest will appear after deposits.</td></tr>';
+    }
+
+    function showView(v) {
+      document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+      document.getElementById(`view${v.charAt(0).toUpperCase()+v.slice(1)}`).classList.add('active');
+      if(v==='dashboard' && currentUser) refreshDashboard();
+      if(v==='admin' && currentUser?.role==='admin') loadAdminUsers();
+      if(v==='withdraw' && currentUser) refreshDashboard();
+      updateNav();
+      if(countdownInterval && v!=='dashboard') clearInterval(countdownInterval);
+    }
+
+    function updateNav() {
+      let nav = document.getElementById('navLinks');
+      if(currentUser) {
+        nav.innerHTML = `<span class="text-gray-700">👋 ${currentUser.name.split(' ')[0]}</span><button id="logoutNav" class="text-red-600 hover:text-red-700">Logout</button>${currentUser.role==='admin'?'<button id="adminNav" class="text-green-700 hover:text-green-800">Admin</button>':''}<button id="dashNav" class="text-green-700 hover:text-green-800">Dashboard</button>`;
+        document.getElementById('logoutNav')?.addEventListener('click', logout);
+        document.getElementById('adminNav')?.addEventListener('click', ()=>showView('admin'));
+        document.getElementById('dashNav')?.addEventListener('click', ()=>showView('dashboard'));
+      } else {
+        nav.innerHTML = `<button id="loginNav" class="text-gray-700 hover:text-green-700">Login</button><button id="signupNav" class="bg-green-700 text-white px-4 py-1 rounded-full hover:bg-green-800">Sign Up</button>`;
+        document.getElementById('loginNav')?.addEventListener('click', ()=>showView('login'));
+        document.getElementById('signupNav')?.addEventListener('click', ()=>showView('signup'));
+      }
+    }
+
+    function logout() { currentUser=null; sessionStorage.removeItem('ziidi_session'); if(countdownInterval) clearInterval(countdownInterval); showView('home'); updateNav(); toast('Logged out successfully'); }
+
+    // Auth handlers
+    document.getElementById('loginForm')?.addEventListener('submit', (e)=>{
+      e.preventDefault(); let email=document.getElementById('loginEmail').value, pwd=document.getElementById('loginPassword').value; let u=users.find(u=>u.email===email && u.password===pwd); if(!u){ toast('Invalid email or password', true); return; } currentUser={...u}; updateInterest(currentUser.id); let upd=users.find(uu=>uu.id===currentUser.id); if(upd) currentUser=upd; sessionStorage.setItem('ziidi_session', currentUser.id); showView(currentUser.role==='admin'?'admin':'dashboard'); toast(`Welcome back ${currentUser.name}`);
+    });
+    document.getElementById('signupForm')?.addEventListener('submit', (e)=>{
+      e.preventDefault(); if(!document.getElementById('agreePrivacy').checked){ toast('You must accept the Privacy Policy', true); return; } let email=document.getElementById('signupEmail').value; if(users.find(u=>u.email===email)){ toast('Email already registered', true); return; } let newUser={ id:Date.now(), name:document.getElementById('fullname').value, email, phone:document.getElementById('phone').value, password:document.getElementById('signupPassword').value, balance:0, totalInterest:0, plan:document.getElementById('signupPlan').value, role:'user', lastInterestDate:new Date().toISOString().split('T')[0], firstDepositDate:null }; users.push(newUser); save(); toast('Account created successfully! Please login.'); showView('login');
+    });
+    document.getElementById('forgotForm')?.addEventListener('submit', (e)=>{
+      e.preventDefault(); let email=document.getElementById('forgotEmail').value; if(!users.find(u=>u.email===email)) toast('Email not found', true); else toast(`Password reset link sent to ${email} (demo mode)`, false);
+    });
+    document.getElementById('depositReqForm')?.addEventListener('submit', (e)=>{
+      e.preventDefault(); if(!currentUser){ toast('Please login first', true); showView('login'); return; } let amt=parseFloat(document.getElementById('depositAmount').value); let plan=document.getElementById('depositPlanSelect').value; let code=document.getElementById('mpesaCode').value.trim(); let minReq=plan==='pro'?5000:(plan==='elite'?20000:1000); if(amt<minReq){ toast(`Minimum deposit for ${plan} plan is KSH ${minReq}`, true); return; } if(!code){ toast('M-Pesa transaction code required', true); return; } deposits.push({ id:Date.now(), userId:currentUser.id, amount:amt, plan, mpesaCode:code, status:'pending', date:new Date().toISOString() }); save(); document.getElementById('depositMessage').innerHTML = 'Deposit request submitted. Pending for approval.'; setTimeout(()=>{ document.getElementById('depositMessage').innerHTML = ''; }, 3000); toast('Deposit request submitted. Pending for approval.'); showView('dashboard');
+    });
+    document.getElementById('withdrawReqForm')?.addEventListener('submit', (e)=>{
+      e.preventDefault(); if(!currentUser){ toast('Please login first', true); showView('login'); return; } let u=users.find(u=>u.id===currentUser.id); let elig=withdrawalEligibility(u.id); if(!elig.eligible){ toast(elig.message, true); return; } let amt=parseFloat(document.getElementById('withdrawAmount').value); let mpesa=document.getElementById('withdrawMpesa').value.trim(); if(isNaN(amt) || amt<1000){ toast('Minimum withdrawal amount is KSH 1,000', true); return; } if(amt > u.balance){ toast('Insufficient balance', true); return; } if(!mpesa.match(/^07\d{8}$/)){ toast('Enter a valid M-Pesa number (format: 07XXXXXXXX)', true); return; } withdrawals.push({ id:Date.now(), userId:currentUser.id, amount:amt, mpesaNumber:mpesa, status:'pending', date:new Date().toISOString() }); save(); document.getElementById('withdrawMessage').innerHTML = 'Withdrawal request submitted. Pending for approval.'; setTimeout(()=>{ document.getElementById('withdrawMessage').innerHTML = ''; }, 3000); toast('Withdrawal request submitted. Pending for approval.'); showView('dashboard');
+    });
+
+    // Admin functions
+    function loadAdminUsers() { let html='<table class="w-full text-left text-sm"><thead class="bg-green-50"><tr><th class="p-2">Name</th><th class="p-2">Email</th><th class="p-2">Plan</th><th class="p-2">Balance</th><th class="p-2">Total Interest</th><th class="p-2">First Deposit</th></tr></thead><tbody>'; users.forEach(u=>{ if(u.role!=='admin') html+=`<tr class="border-b"><td class="p-2">${u.name}</td><td class="p-2">${u.email}</td><td class="p-2">${u.plan}</td><td class="p-2">KSH ${u.balance.toFixed(2)}</td><td class="p-2">KSH ${(u.totalInterest||0).toFixed(2)}</td><td class="p-2">${u.firstDepositDate?new Date(u.firstDepositDate).toLocaleDateString():'None'}</td></tr>`; }); html+='</tbody></table>'; document.getElementById('adminContent').innerHTML=html; }
+    function loadAdminDeposits() { let html='<table class="w-full text-sm"><thead class="bg-green-50"><tr><th class="p-2">User</th><th class="p-2">Amount</th><th class="p-2">Plan</th><th class="p-2">M-Pesa Code</th><th class="p-2">Status</th><th class="p-2">Action</th></tr></thead><tbody>'; deposits.forEach(d=>{ let u=users.find(uu=>uu.id===d.userId); let un=u?u.name:'?'; html+=`<tr class="border-b"><td class="p-2">${un}</td><td class="p-2">KSH ${d.amount}</td><td class="p-2">${d.plan}</td><td class="p-2">${d.mpesaCode}</td><td class="p-2"><span class="px-2 py-1 rounded-full text-xs ${d.status==='pending'?'bg-yellow-100 text-yellow-800':(d.status==='approved'?'bg-green-100 text-green-800':'bg-red-100 text-red-800')}">${d.status}</span></td><td class="p-2">${d.status==='pending'?`<button class="appDep bg-green-600 text-white px-2 py-1 rounded text-xs mr-1" data-id="${d.id}">Approve</button><button class="rejDep bg-red-600 text-white px-2 py-1 rounded text-xs" data-id="${d.id}">Reject</button>`:'-'}</td></tr>`; }); html+='</tbody></table>'; document.getElementById('adminContent').innerHTML=html; document.querySelectorAll('.appDep').forEach(btn=>btn.addEventListener('click',()=>{ let id=parseInt(btn.dataset.id); let dep=deposits.find(d=>d.id===id); if(dep && dep.status==='pending'){ dep.status='approved'; let user=users.find(u=>u.id===dep.userId); if(user){ updateInterest(user.id); user.balance+=dep.amount; user.plan=dep.plan; if(!user.firstDepositDate) user.firstDepositDate=new Date().toISOString(); save(); if(currentUser && currentUser.id===user.id) refreshDashboard(); } toast('Deposit approved – balance and plan updated'); loadAdminDeposits(); } })); document.querySelectorAll('.rejDep').forEach(btn=>btn.addEventListener('click',()=>{ let id=parseInt(btn.dataset.id); let dep=deposits.find(d=>d.id===id); if(dep){ dep.status='rejected'; save(); loadAdminDeposits(); } })); }
+    function loadAdminWithdrawals() { let html='<table class="w-full text-sm"><thead class="bg-green-50"><tr><th class="p-2">User</th><th class="p-2">Amount</th><th class="p-2">M-Pesa Number</th><th class="p-2">Status</th><th class="p-2">Action</th></tr></thead><tbody>'; withdrawals.forEach(w=>{ let u=users.find(uu=>uu.id===w.userId); let un=u?u.name:'?'; html+=`<tr class="border-b"><td class="p-2">${un}</td><td class="p-2">KSH ${w.amount}</td><td class="p-2">${w.mpesaNumber||''}</td><td class="p-2"><span class="px-2 py-1 rounded-full text-xs ${w.status==='pending'?'bg-yellow-100 text-yellow-800':(w.status==='approved'?'bg-green-100 text-green-800':'bg-red-100 text-red-800')}">${w.status}</span></td><td class="p-2">${w.status==='pending'?`<button class="appWit bg-green-600 text-white px-2 py-1 rounded text-xs mr-1" data-id="${w.id}">Approve</button><button class="rejWit bg-red-600 text-white px-2 py-1 rounded text-xs" data-id="${w.id}">Reject</button>`:'-'}</td></tr>`; }); html+='</tbody></table>'; document.getElementById('adminContent').innerHTML=html; document.querySelectorAll('.appWit').forEach(btn=>btn.addEventListener('click',()=>{ let id=parseInt(btn.dataset.id); let wd=withdrawals.find(w=>w.id===id); if(wd && wd.status==='pending'){ let user=users.find(u=>u.id===wd.userId); if(user){ updateInterest(user.id); if(user.balance>=wd.amount){ user.balance-=wd.amount; wd.status='approved'; save(); if(currentUser && currentUser.id===user.id) refreshDashboard(); toast(`Withdrawal approved – sent to ${wd.mpesaNumber}`); } else toast('Insufficient balance for this withdrawal', true); } loadAdminWithdrawals(); } })); document.querySelectorAll('.rejWit').forEach(btn=>btn.addEventListener('click',()=>{ let id=parseInt(btn.dataset.id); let wd=withdrawals.find(w=>w.id===id); if(wd){ wd.status='rejected'; save(); loadAdminWithdrawals(); } })); }
+    function loadAdminSupport() { let html='<div class="space-y-3">'; supportMessages.slice().reverse().forEach(msg=>{ html+=`<div class="support-msg"><p><strong>${msg.senderName}</strong> <span class="text-xs text-gray-500">${new Date(msg.timestamp).toLocaleString()}</span></p><p>${msg.message}</p>`; if(!msg.replyText && currentUser?.role==='admin'){ html+=`<button class="replyMsg mt-2 bg-green-600 text-white px-3 py-1 rounded text-xs" data-id="${msg.id}">Reply</button>`; } if(msg.replyText){ html+=`<div class="mt-2 pl-4 border-l-2 border-green-400"><strong>Admin reply:</strong> ${msg.replyText}</div>`; } html+=`</div>`; }); html+='</div>'; document.getElementById('adminContent').innerHTML=html; document.querySelectorAll('.replyMsg').forEach(btn=>btn.addEventListener('click',()=>{ let id=parseInt(btn.dataset.id); let rep=prompt('Type your reply to the user:'); if(rep && rep.trim()){ let msg=supportMessages.find(m=>m.id===id); if(msg){ msg.replyText=rep; msg.replyTimestamp=new Date().toISOString(); save(); toast('Reply saved. User will see it in chat.'); loadAdminSupport(); } } })); }
+
+    // Navigation listeners
+    document.getElementById('homeGetStarted')?.addEventListener('click', ()=>showView('signup'));
+    document.getElementById('homeLearnMore')?.addEventListener('click', ()=>document.getElementById('featuresSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    document.querySelectorAll('.signupPlanBtn').forEach(btn=>btn.addEventListener('click', ()=>showView('signup')));
+    document.getElementById('forgotBtn')?.addEventListener('click', ()=>showView('forgot'));
+    document.getElementById('signupFromLogin')?.addEventListener('click', ()=>showView('signup'));
+    document.getElementById('loginFromSignup')?.addEventListener('click', ()=>showView('login'));
+    document.getElementById('backToLogin')?.addEventListener('click', ()=>showView('login'));
+    document.getElementById('privacyLink')?.addEventListener('click', ()=>showView('privacy'));
+    document.getElementById('backFromPrivacy')?.addEventListener('click', ()=>showView('signup'));
+    document.getElementById('investBtn')?.addEventListener('click', ()=>showView('deposit'));
+    document.getElementById('withdrawBtn')?.addEventListener('click', ()=>showView('withdraw'));
+    document.getElementById('upgradeBtn')?.addEventListener('click', ()=>showView('deposit'));
+    document.getElementById('backDashFromDeposit')?.addEventListener('click', ()=>showView('dashboard'));
+    document.getElementById('backDashFromWithdraw')?.addEventListener('click', ()=>showView('dashboard'));
+    document.getElementById('exitAdmin')?.addEventListener('click', ()=>showView('dashboard'));
+    document.getElementById('adminUsers')?.addEventListener('click', loadAdminUsers);
+    document.getElementById('adminDeposits')?.addEventListener('click', loadAdminDeposits);
+    document.getElementById('adminWithdrawals')?.addEventListener('click', loadAdminWithdrawals);
+    document.getElementById('adminSupport')?.addEventListener('click', loadAdminSupport);
+    document.querySelectorAll('.perfBtn').forEach(btn=>btn.addEventListener('click', ()=>loadPerf(btn.dataset.period)));
+
+    // Live clock
+    setInterval(()=>{ document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('en-KE'); }, 1000);
+
+    // Counter animation
+    document.querySelectorAll('.counter').forEach(c=>{ let t=parseInt(c.dataset.target); let cur=0; let inc=t/50; let inter=setInterval(()=>{ cur+=inc; if(cur>=t){ c.innerText=t.toLocaleString(); clearInterval(inter); } else c.innerText=Math.floor(cur).toLocaleString(); }, 30); });
+
+    // FAQ data & builder
+    const faqData = [
+      { q: "How do I deposit money?", a: "Send via M-Pesa to Paybill 516600, Account 5562100001. Then go to 'Invest Now' and enter transaction code." },
+      { q: "What is the minimum withdrawal?", a: "Minimum withdrawal is 1,000 KSH. Withdrawals are available 30 days after your first deposit." },
+      { q: "How is interest calculated?", a: "Interest compounds daily at 2.5% (Starter), 3% (Pro), or 4% (Elite). Added automatically every 24 hours." },
+      { q: "Is my money safe?", a: "Yes, we use bank-grade security. All data is stored locally on your device. We never share your information." },
+      { q: "How long do withdrawals take?", a: "Withdrawal requests are processed within 24 hours after admin approval." },
+      { q: "Can I upgrade my plan?", a: "Yes! Make an additional deposit that meets the minimum for a higher plan, and admin will upgrade you upon approval." },
+      { q: "Do I need to verify my identity?", a: "We collect your name, email, and phone for KYC. No further verification is required for basic accounts." },
+      { q: "How do I contact support?", a: "Use the live chat (robot icon) or WhatsApp button. Our team is available 24/7." }
+    ];
+    const faqContainer = document.getElementById('faqContainer');
+    if(faqContainer) {
+      faqData.forEach(item => {
+        let div = document.createElement('div'); div.className = 'faq-item';
+        div.innerHTML = `<div class="faq-question">${item.q} <i class="fas fa-chevron-down"></i></div><div class="faq-answer">${item.a}</div>`;
+        div.querySelector('.faq-question').addEventListener('click', () => { let ans = div.querySelector('.faq-answer'); ans.style.display = ans.style.display === 'block' ? 'none' : 'block'; });
+        faqContainer.appendChild(div);
+      });
+    }
+
+    // Chatbot with persistent messages and admin replies
+    const chatPopup = document.getElementById('chatPopup'), chatIconBtn = document.getElementById('chatIcon'), closeChatBtn = document.getElementById('closeChat'), sendChat = document.getElementById('sendChatBtn'), chatInputBox = document.getElementById('chatInput'), chatMsgsDiv = document.getElementById('chatMessages');
+    function addBotMessage(msg){ let d=document.createElement('div'); d.className='mb-2'; d.innerHTML=`<span class="bg-green-100 p-2 rounded-lg inline-block">${msg}</span>`; chatMsgsDiv.appendChild(d); chatMsgsDiv.scrollTop=chatMsgsDiv.scrollHeight; }
+    function addUserMessageUI(msg){ let d=document.createElement('div'); d.className='mb-2 text-right'; d.innerHTML=`<span class="bg-gray-200 p-2 rounded-lg inline-block">${msg}</span>`; chatMsgsDiv.appendChild(d); chatMsgsDiv.scrollTop=chatMsgsDiv.scrollHeight; }
+    function loadUserChatHistory(){ if(!currentUser) return; chatMsgsDiv.innerHTML='<div class="mb-2"><span class="bg-green-100 p-2 rounded-lg inline-block">Hello! How can I help?</span></div>'; let msgs=supportMessages.filter(m=>m.senderId===currentUser.id); msgs.forEach(m=>{ addUserMessageUI(m.message); if(m.replyText){ let d=document.createElement('div'); d.className='mb-2'; d.innerHTML=`<span class="bg-green-100 p-2 rounded-lg inline-block">Admin: ${m.replyText}</span>`; chatMsgsDiv.appendChild(d); } }); }
+    chatIconBtn.addEventListener('click',()=>{ chatPopup.style.display='flex'; if(currentUser) loadUserChatHistory(); });
+    closeChatBtn.addEventListener('click',()=>{ chatPopup.style.display='none'; });
+    sendChat.addEventListener('click',()=>{ let msg=chatInputBox.value.trim(); if(!msg) return; addUserMessageUI(msg); let newMsg={ id:Date.now(), senderId:currentUser?currentUser.id:null, senderName:currentUser?currentUser.name:'Guest', message:msg, timestamp:new Date().toISOString(), replyText:null }; supportMessages.push(newMsg); save(); chatInputBox.value=''; setTimeout(()=>{ if(msg.toLowerCase().includes('withdraw')) addBotMessage('Minimum withdrawal 1,000 KSH. Eligible 30 days after first deposit.'); else if(msg.toLowerCase().includes('deposit')) addBotMessage('Send to Paybill 516600, Account 5562100001, then submit transaction code in Invest Now.'); else if(msg.toLowerCase().includes('interest')) addBotMessage('Daily compound 2.5%-4% based on plan. Interest added every 24h.'); else addBotMessage('Thank you for your message. Support will review and reply.'); },500); });
+    chatInputBox.addEventListener('keypress',(e)=>{ if(e.key==='Enter') sendChat.click(); });
+
+    // Initialise
+    load();
+    let stored = sessionStorage.getItem('ziidi_session');
+    if(stored){ let found = users.find(u=>u.id == stored); if(found){ currentUser = {...found}; updateInterest(currentUser.id); let upd = users.find(u=>u.id===currentUser.id); if(upd) currentUser=upd; showView(currentUser.role==='admin'?'admin':'dashboard'); } else showView('home'); } else showView('home');
+    updateNav();
+  </script>
+</body>
+</html>
